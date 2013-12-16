@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>QNML</title>
+    <meta name="description" content=""/>
+    <meta name="keywords" content=""/>
+    <script type="text/javascript" src="../qnml.min.js"></script>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <style type="text/css">
+        #input{
+            resize:none;
+            overflow:hidden;
+            font-size: 12px;
+            line-height: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <!--编辑器-->
+        <h1>极简代码高亮</h1>
+        <div class="row">
+            <div class="col-md-2">
+                <select id="lanuage"  class="form-control">
+                    <option value="html">HTML</option>
+                    <option value="js">JS/AS</option>
+                    <option value="css">CSS</option>
+                    <option value="php">PHP</option>
+                    <option value="cpp">C/C++</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button  onclick="highlight()" class="btn btn-info">立即高亮</button>
+            </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+            <div class="col-md-6">
+                <textarea spellcheck="false" id="input" class="form-control" rows="26" oninput="setHeight();"></textarea>
+                
+            </div>
+            <div class="col-md-6">
+                <div  id='output'>
+            
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+    function $(id){
+        return document.getElementById(id)
+    }
+
+    var input =     $('input');
+    var output =    $('output')
+    var lanuage =   $('lanuage')
+    
+	function highlight(){
+        output.innerHTML = qnml.parse(input.value,'qnml:code-'+lanuage.value);
+    }
+    function setHeight(){
+        input.style.height = input.scrollHeight+"px";
+    }
+
+</script>
+
+</html>
