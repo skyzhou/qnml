@@ -6,11 +6,6 @@ module.exports = function(grunt){
 				src:['src/index.js','src/lib/*.js','src/language/*.js'],
 				template:['template/highlight.tpl'],
 				dest:'dest/qnml.js'
-			},
-			nce:{
-				src:['nce/src/index.js'],
-				template:['nce/template/style.tpl'],
-				dest:'nce/dest/nce.js'
 			}
 		},
 		uglify:{
@@ -20,14 +15,10 @@ module.exports = function(grunt){
 			qnml:{
 				src:'dest/qnml.js',
 				dest:'dest/qnml.min.js'
-			},
-			nce:{
-				src:'nce/dest/nce.js',
-				dest:'nce/dest/nce.min.js'
-			},
+			}
 		},
 		watch:{
-			files:['template/~.tpl','src/~.js','nce/src/~.js','nce/template/~.tpl'],
+			files:['template/~.tpl','src/~.js'],
 			tasks:['concat','uglify']
 		}
 	});
@@ -35,5 +26,5 @@ module.exports = function(grunt){
 	grunt.loadNpmTasks('grunt-contrib-uglify');
 	grunt.loadNpmTasks('grunt-qc-watch');
 
-	grunt.registerTask('default',['concat']);
+	grunt.registerTask('default',['concat','uglify']);
 }
