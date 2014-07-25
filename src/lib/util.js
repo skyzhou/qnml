@@ -5,6 +5,7 @@ qnml.lib = qnml.lib || {};
 	lib.isArray = function(){
 		return Ot.call(this) == "[object Array]";
 	}
+	
 	lib.tmpl = function(){
 		var cache = {};
 		function _getTmplStr(rawStr, mixinTmpl) {

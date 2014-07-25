@@ -14,12 +14,14 @@
 qnml.lib = qnml.lib || {}; 
 
 (function(lib){
+	var rn = /msie/i.test(navigator.userAgent)?"<label></label>":new Array(9).join('&nbsp;');
 
 	//换行替换符
 	var sLine = "@li"+"ne@";
 
+
 	//\r - 10,\n - 13,\t - 9,\s - 32
-	var blanks  = {13:sLine,10:sLine,9:'&nbsp;&nbsp;&nbsp;&nbsp;',32:'&nbsp;',160:'&nbsp;',11:''};
+	var blanks  = {13:sLine,10:sLine,9:rn,32:'&nbsp;',160:'&nbsp;',11:''};
 
 	//注释 . 出\n以外的任何字符
 	var rComments = /(\/{2,}[^\r\n]*)|(\/\*[\s\S]*?\*\/)|(<!\-\-[\s\S]*?\-\->)/g;
@@ -47,7 +49,7 @@ qnml.lib = qnml.lib || {};
 	var rBlank = /[\s]/g;
 
 	//还原
-	var rRest = /@tag(\d+)@/g;
+	var rRest = /@(?:tag|tpl)(\d+)@/g;
 	
 	
 	var highlight = {
@@ -55,45 +57,31 @@ qnml.lib = qnml.lib || {};
 		 * @class qnml.lib.Format
 		 * @constructor
 		 * @param {String} 源码
-		 * @param {Object} config 可选参数
+		 * @param {Object} config 配置
 		 */
 		 /**
 		  * @for qnml.lib.Format
 		  */
-		Format:function(raw,config){
-			/**
-			 * @property raw 源码
-			 * @type {String}
-			 */
-			this.raw = raw;
+		Format:function(config){
 
-
-			/**
-			 * @private 
-			 */
 			this.index = 0;
-			/**
-			 * @pravite 
-			 */
 			this.pool = {};
 
-
-			/**
-			 * @property config 选项
-			 * @type {Object}
-			 */
-			this.config = config || {};
-
-			if(!this.config.option){
-				this.config.option = {};
+			if(!config){
+				config = {};
 			}
 
-			/**
-			 * @property output 源码
-			 * @type {String}
-			 */
-			 //this.output = this.config.option.inner ? raw : this.trim(raw);
-			this.output = raw;
+			if(config.keywords){
+				this.keywords = new RegExp("(^|\\W)("+config.keywords.join("|")+")(\\W|$)",'g');
+			}
+			if(config.library){
+				this.library = new RegExp("(^|\\W)("+config.library.join("|")+")(\\W|$)",'g')
+			}
+
+
+			this.raw = "";
+			this.output = "";
+			this.option = {};
 		}
 
 	}
@@ -102,7 +90,7 @@ qnml.lib = qnml.lib || {};
 		 * 将字符串临时存储起来
 		 * @private
 		 */
-		process:function(text,module){
+		process:function(text,module,i){
 			this.index++;
 
 			//注意、字符串里面存在缩进和实体
@@ -114,8 +102,12 @@ qnml.lib = qnml.lib || {};
 			var data = obj.output.split(sLine);
 
 			this.pool[this.index] = {data:data,module:module};
-
-			return "@tag"+this.index+"@";
+			if(i){
+				return this.index;
+			}
+			else{
+				return "@tag"+this.index+"@";
+			}
 		},
 		/**
 		 * 去掉头尾空串
@@ -197,9 +189,9 @@ qnml.lib = qnml.lib || {};
 		escKeyWord:function(){
 			
 			var __this = this;
-			var keywords = this.config.keywords;
-			if(keywords){
-				this.output = this.output.replace(new RegExp("(^|\\W)("+keywords.join("|")+")(\\W|$)",'g'),function(match,pre,keyword,tail){
+
+			if(this.keywords){
+				this.output = this.output.replace(this.keywords,function(match,pre,keyword,tail){
 					return pre+__this.process(keyword,'keyword')+tail;
 				})
 			}
@@ -213,10 +205,9 @@ qnml.lib = qnml.lib || {};
 		escLibrary:function(){
 			
 			var __this = this;
-			var library = this.config.library;
 			
-			if(library){
-				this.output = this.output.replace(new RegExp("(^|\\W)("+library.join("|")+")(\\W|$)",'g'),function(match,pre,fn,tail){
+			if(this.library){
+				this.output = this.output.replace(this.library,function(match,pre,fn,tail){
 					return pre+__this.process(fn,'library')+tail;
 				})
 			}
@@ -247,22 +238,7 @@ qnml.lib = qnml.lib || {};
 			})
 			return this;
 		},
-		/**
-		 * 执行校验，主要防止html被多次实体，字符串内类似与注释的未被还原
-		 * @private
-		 */
-		check:function(){
-			var __this = this;
-			
-			this.output =  this.output.replace(/&#38#/g,'&#');
 
-			//剩下的不染色，直接还原
-			this.output = this.output.replace(rRest,function(match,id){
-				return __this.pool[id].data.join('');
-			});
-			
-			return this;
-		},
 		/**
 		 * 将被替换还原
 		 * @private
@@ -274,11 +250,17 @@ qnml.lib = qnml.lib || {};
 
 
 			this.output = this.output.replace(rRest,function(match,id){
-				
 				return __this.color(__this.pool[id]);
 			});
+			
+			this.output =  this.output.replace(/&#38#/g,'&#');
 
-			if(!this.config.option.inner){
+			//剩下的不染色，直接还原
+			this.output = this.output.replace(rRest,function(match,id){
+				return __this.pool[id].data.join(sLine);
+			});
+
+			if(!this.option.html){
 				this.output =  this.output.replace(new RegExp(sLine,'g'),function(){
 					i++;
 					//return (i==1?"":"<br />")+__this.color({data:[i],module:'line'});
@@ -287,7 +269,6 @@ qnml.lib = qnml.lib || {};
 				i++;
 				this.output += __this.color({data:[i],module:'line'});
 			}
-
 			
 			return this;
 		},
@@ -308,19 +289,22 @@ qnml.lib = qnml.lib || {};
 			return html.join(str);
 		},
 		lightHtml:function(){
+
 			var __this = this;
 			var i = 0;
 			var pool = {};
+			var raw = {};
 
 			this.output = this.output.replace(/(<script[^>]*>)([\s\S]*?)(<\/script>)/g,function(match,pre,js,end){
 				
 				if(!/\w/.test(js)){
 					return match;
 				}
-				i++;
-				pool[i] = qnml.parse(js,'qnml:code-js',{inner:true});
-				return pre+"{tpl"+i+"}"+end;
+				i = __this.process(js,"js",true);
+				pool[i] = qnml.parse(js,'qnml:js',{html:true});
+				return pre+"@tpl"+i+"@"+end;
 			});
+
 
 			this.output = this.output.replace(/(<style[^>]*>)([\s\S]*?)(<\/style>)/g,function(match,pre,css,end){
 				if(/style/i.test(css)){
@@ -329,9 +313,9 @@ qnml.lib = qnml.lib || {};
 				if(!/\w/.test(css)){
 					return match;
 				}
-				i++;
-				pool[i] = qnml.parse(css,'qnml:code-css',{inner:true});
-				return pre+"{tpl"+i+"}"+end;
+				i = __this.process(css,"css",true);
+				pool[i] = qnml.parse(css,'qnml:css',{html:true});
+				return pre+"@tpl"+i+"@"+end;
 			});
 
 			this.output = this.output.replace(/<!\-\-[\s\S]*?\-\->/g,function(match){
@@ -357,15 +341,16 @@ qnml.lib = qnml.lib || {};
 			this.escape();
 			this.escBlank();
 
-			this.output = this.output.replace(/{tpl(\d+)}/g,function(match,id){
+			this.output = this.output.replace(/@tpl(\d+)@/g,function(match,id){
 				return pool[id];
 			});
 
-			this.restHtml().check();
+			this.restHtml();
 
 			return '<div class="hh-code">'+this.output+'</div>';
 		},
 		lightCss:function(){
+
 			var __this = this;
 
 			this.escString().escComment();
@@ -374,8 +359,8 @@ qnml.lib = qnml.lib || {};
 				return __this.process(prop,'keyword')+":"+__this.process(val,'library');
 			});
 
-			this.escBlank().restHtml().check();
-			if(this.config.option.inner){
+			this.escBlank().restHtml();
+			if(this.option.html){
 				return this.output;
 			}
 
@@ -383,16 +368,45 @@ qnml.lib = qnml.lib || {};
 
 
 		},
-		lightCode:function(){
-			this.escRegExp().escString().escComment().escPound().escNumber().escKeyWord().escLibrary().escape().escBlank().restHtml().check();
+		light:function(raw,option,render){
 			
-			if(this.config.option.inner){
+			if(!option){
+				option = {};
+			}
+
+			this.raw = raw;
+			this.output = raw;
+			this.option = option;
+			this.pool = {};
+
+			
+
+			if(render == "html"){
+				return this.lightHtml();
+			}
+			if(render == "css"){
+				return this.lightCss();
+			}
+
+			var tt=[];t0 = new Date();
+
+			this.escRegExp()
+			this.escString()
+			this.escComment()
+			this.escPound()
+			this.escNumber()
+			this.escKeyWord()
+			this.escLibrary()
+			this.escape()
+			this.escBlank()
+			this.restHtml()
+
+
+			
+			if(this.option.html){
 				return this.output;
 			}
 			return '<div class="hh-code">'+this.output+'</div>';
-		},
-		toString:function(){
-			return this.lightCode();
 		}
 
 	}

@@ -7,16 +7,23 @@
         margin-left:40px;
         border-left: 1px solid #D4D4D4;
         position:relative;
-        padding:10px;
+        padding:0px;
+        padding-left:10px;
         word-wrap:break-word;
         text-decoration:none;
     }
+    
+    .hh-code label{
+        display:inline-block;
+        width:64px;
+    }
+    
+
     u .hh-code{
         text-decoration:none;
     }
     .hh-comment{
         color: #999999;
-        font-style: italic;
     }
     .hh-pound{
         color: #999988;
@@ -52,4 +59,5 @@
         padding-right: 8px;
         -webkit-user-select:none;
     }
+    
 </template>

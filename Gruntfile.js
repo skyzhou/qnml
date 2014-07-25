@@ -4,26 +4,36 @@ module.exports = function(grunt){
 		concat:{
 			qnml:{
 				src:['src/index.js','src/lib/*.js','src/language/*.js'],
+				template:['template/highlight.tpl'],
 				dest:'dest/qnml.js'
+			},
+			nce:{
+				src:['nce/src/index.js'],
+				template:['nce/template/style.tpl'],
+				dest:'nce/dest/nce.js'
 			}
 		},
 		uglify:{
 			options:{
 				banner:'/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
 			},
-			build:{
+			qnml:{
 				src:'dest/qnml.js',
 				dest:'dest/qnml.min.js'
-			}
+			},
+			nce:{
+				src:'nce/dest/nce.js',
+				dest:'nce/dest/nce.min.js'
+			},
 		},
 		watch:{
-			files:['src/*.js','src/language/*.js','src/lib/*.js'],
+			files:['template/~.tpl','src/~.js','nce/src/~.js','nce/template/~.tpl'],
 			tasks:['concat','uglify']
 		}
 	});
-	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-qc-concat');
 	grunt.loadNpmTasks('grunt-contrib-uglify');
-	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-qc-watch');
 
-	grunt.registerTask('default',['concat','uglify']);
+	grunt.registerTask('default',['concat']);
 }

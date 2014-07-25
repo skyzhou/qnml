@@ -30,51 +30,28 @@ window.qnml = window.qnml || {};
 	/**
 	 *将文本内容用指定的标记语言来解析
 	 *@param {String} raw 文本内容
-	 *@param {String} 标记语言标签
-	 *@param {Object} 选项
+	 *@param {String} nodeName 标记语言标签
+	 *@param {Object} option 选项
 	 */
 	qnml.parse = function(raw,nodeName,option){
+		
 		if(!isInit){
-			
 			this.insertStyle(style.join("\r\n"));
 			isInit = true;
 		}
 
-		var hit = false;
+		var lan = "qnml:unknown",raw;
+
 		for(var i = 0,la;la = languages[i];i++){
 			if(la.nodeName == nodeName){
-				//全文本 属性 内容
-				raw = la.parse(raw,null,raw,option);
-				hit = true;
+				lan = la;
 				break;
 			}
 		}
-
-		if(!hit){
-			raw = this.parse(raw,"qnml:unknown",option);
-		}
-
+		raw = la.parse(raw,option);
+		
 		return raw;
 	}
-	/**
-	 *解析文本中的标记语言
-	 */
-	qnml.parseAll = function(raw,option){
-		
-		if(!isInit){
-			
-			this.insertStyle(style.join("\r\n"));
-			isInit = true;
-		}
-
-		//
-		for(var i = 0,la;la = languages[i];i++){
-			raw = raw.replace(la.match,function(match,attr,text){
-				return la.parse(match,attr,text,option);
-			});
-		}
-		return raw;
-	},
 	qnml.insertStyle = function(rules){
 			var node=document.createElement("style");
 			node.type='text/css';

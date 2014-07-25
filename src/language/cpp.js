@@ -1,0 +1,65 @@
+;(function(){
+	var highlight;
+	qnml.addLanguage({
+		nodeName:["qnml:cpp","qnml:h","qnml:c","qnml:cc"],
+		parse:function(text,option){
+			if(!highlight){
+				highlight = new qnml.lib.highlight.Format(
+					{
+						keywords:[
+							'typedef',
+							'auto',
+							'double',
+							'inline',
+							'short',
+							'typeid',
+							'bool',
+							'int',
+							'signed',
+							'typename',
+							'long',
+							'sizeof',
+							'case',
+							'enum',
+							'static',
+							'unsigned',
+							'namespace',
+							'using',
+							'char',
+							'virtual',
+							'struct',
+							'class',
+							'void',
+							'const',
+							'private',
+							'template',
+							'float',
+							'protected',
+							'public',
+							'goto',
+							'if',
+							'else',
+							'while',
+							'do',
+							'switch',
+							'case',
+							'new',
+							'continue',
+							'try',
+							'catch',
+							'return',
+							'break',
+							'delete',
+							'true',
+							'fale'
+						],
+						library:[
+							
+						]
+					}
+				)
+			}
+			return highlight.light(text,option);
+		}
+	});
+})();
